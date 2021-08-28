@@ -7,6 +7,7 @@ interface Props {
 export const VideoInput = ({ cameraRef }: Props) => {
   return (
     <Webcam
+      id="video"
       audio={false}
       ref={cameraRef}
       style={{

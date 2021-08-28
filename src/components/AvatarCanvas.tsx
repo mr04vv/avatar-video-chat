@@ -10,10 +10,12 @@ export const AvatarCanvas = ({ canvasRef }: Props) => {
         position: "absolute",
         margin: "auto",
         textAlign: "center",
-        top: 100,
+        top: 200,
         left: 0,
         right: 0,
         zIndex: 9,
+        height: "50vh",
+        width: "50vw",
       }}
     />
   );
