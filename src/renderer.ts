@@ -54,6 +54,18 @@ export async function live2dRender(
    */
   CubismFramework.startUp();
   CubismFramework.initialize();
+  const defaultPosition = Object.assign(
+    {
+      x: 0,
+      y: 0,
+      z: 1,
+    },
+    {
+      x: option.x,
+      y: option.y,
+      z: option.scale,
+    }
+  );
 
   const modelSetting = new CubismModelSettingJson(
     _model,
@@ -110,8 +122,8 @@ export async function live2dRender(
 
   const projectionMatrix = new CubismMatrix44();
   const resizeModel = () => {
-    canvas.width = canvas.clientWidth * devicePixelRatio;
-    canvas.height = canvas.clientHeight * devicePixelRatio;
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
 
     // NOTE: modelMatrixは、モデルのユニット単位での幅と高さが1×1に収まるように縮めようとしている？
     const modelMatrix = model.getModelMatrix();
@@ -122,17 +134,18 @@ export async function live2dRender(
     const canvasRatio = canvas.height / canvas.width;
     if (1 < canvasRatio) {
       // モデルが横にはみ出る時は、HTMLキャンバスの幅で合わせる
-      // modelMatrix.scale(1, canvas.width / canvas.height);
+      modelMatrix.scale(1, canvas.width / canvas.height);
     } else {
       // モデルが上にはみ出る時は、HTMLキャンバスの高さで合わせる（スマホのランドスケープモードとか）
-      // modelMatrix.scale(canvas.height / canvas.width, 1);
+      modelMatrix.scale(canvas.height / canvas.width, 1);
     }
-    // modelMatrix.translateRelative(defaultPosition.x, defaultPosition.y);
+    modelMatrix.translateRelative(defaultPosition.x, defaultPosition.y);
+    // modelMatrix.translateRelative(0, 0);
     // モデルが良い感じの大きさになるように拡大・縮小
-    // projectionMatrix.multiplyByMatrix(modelMatrix);
+    projectionMatrix.multiplyByMatrix(modelMatrix);
     const scale = 5;
     projectionMatrix.scaleRelative(scale, scale);
-    projectionMatrix.translateY(-2);
+    projectionMatrix.translateY(-1);
     model.getRenderer().setMvpMatrix(projectionMatrix);
   };
   resizeModel();
@@ -156,21 +169,41 @@ export async function live2dRender(
     const _model = model.getModel();
     const idManager = CubismFramework.getIdManager();
 
+    const X = (90 * (point.faceL - point.faceR)) / (point.faceL + point.faceR);
     _model.setParameterValueById(
-      idManager.getId("ParamAngleX"),
-      point.angleX,
+      idManager.getId("PARAM_ANGLE_X"),
+      point.faceL + point.faceR > 0 ? X : 0,
       0.5
     );
     _model.setParameterValueById(
-      idManager.getId("ParamAngleY"),
-      point.angleY,
+      idManager.getId("PARAM_BODY_ANGLE_X"),
+      // eslint-disable-next-line use-isnan
+      point.faceL + point.faceR > 0 ? X / 6 : 0,
       0.5
     );
+
+    const Y =
+      (-90 * (point.vecL[0] * point.vecR[0] + point.vecL[1] * point.vecR[1])) /
+      Math.sqrt(point.vecL[0] * point.vecL[0] + point.vecL[1] * point.vecL[1]) /
+      Math.sqrt(point.vecR[0] * point.vecR[0] + point.vecR[1] * point.vecR[1]);
+
     _model.setParameterValueById(
-      idManager.getId("ParamAngleZ"),
-      point.angleZ,
-      0.5
+      idManager.getId("PARAM_ANGLE_Y"),
+      // eslint-disable-next-line use-isnan
+      isNaN(Y) ? 0 : Y,
+      1
     );
+    // _model.setParameterValueById(
+    //   idManager.getId("PARAM_BODY_ANGLE_Y"),
+    //   // eslint-disable-next-line use-isnan
+    //   isNaN(Y) ? 0 : Y / 3,
+    //   1
+    // );
+    // _model.setParameterValueById(
+    //   idManager.getId("ParamAngleZ"),
+    //   point.angleZ,
+    //   0.5
+    // );
     _model.setParameterValueById(
       idManager.getId("ParamEyeBallX"),
       point.angleEyeX,
@@ -186,11 +219,11 @@ export async function live2dRender(
       point.mouseDistance * 0.1,
       0.5
     );
-    _model.setParameterValueById(
-      idManager.getId("ParamBodyAngleZ"),
-      point.angleZ / 2,
-      0.05
-    );
+    // _model.setParameterValueById(
+    //   idManager.getId("ParamBodyAngleZ"),
+    //   point.angleZ / 2,
+    //   0.05
+    // );
     _model.saveParameters();
     // 頂点の更新
     model.update(deltaTimeSecond);

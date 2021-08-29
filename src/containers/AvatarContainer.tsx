@@ -6,16 +6,7 @@ import { FacePoint } from "../lib/FacePoint";
 import { live2dRender } from "../renderer";
 import { getDistance, getAngle } from "../util/MathUtil";
 import axios from "axios";
-import json from "../lib/Hiyori/hiyori.model3.json";
-import "@tensorflow/tfjs-core";
-import "@tensorflow/tfjs-converter";
-import "@tensorflow/tfjs-backend-webgl";
-import * as faceLandmarksDetection from "@tensorflow-models/face-landmarks-detection";
-import { drawMesh } from "../lib/meshUtil";
-import { MediaPipeFaceMesh } from "@tensorflow-models/face-landmarks-detection/dist/mediapipe-facemesh";
-import * as faceapi from "face-api.js";
-import { TinyFaceDetector } from "face-api.js";
-import { webcam } from "@tensorflow/tfjs-data";
+
 export const AvatarContainer = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -85,7 +76,6 @@ export const AvatarContainer = () => {
         updatePoint(point);
       };
       document.body.addEventListener("mousemove", _handleOnMouseMove, false);
-      console.debug("here");
     } catch (e) {
       console.error(e);
     }
@@ -95,6 +85,10 @@ export const AvatarContainer = () => {
     MODEL_FILES.physics3,
     MODEL_FILES.textures,
   ]);
+
+  useEffect(() => {
+    load();
+  }, []);
 
   // const detectFace = async (network: MediaPipeFaceMesh) => {
   //   if (
@@ -137,109 +131,12 @@ export const AvatarContainer = () => {
   //   detectFace(network);
   // };
 
-  const video = document.getElementById("video") as HTMLVideoElement;
-  const a = async () => {
-    console.debug("here");
-    if (cameraRef.current) {
-      console.debug("heee");
-      const inputSize = 512; // 認識対象のサイズ
-      const scoreThreshold = 0.5; // 数値が高いほど精度が高くなる（〜0.9）
-      // (2)オプション設定
-      const options = new faceapi.TinyFaceDetectorOptions({
-        inputSize,
-        scoreThreshold,
-      });
-      // Webカメラ初期化
-      const video = document.getElementById("video") as HTMLVideoElement;
-      // (3)顔認識処理
-      if (video) {
-        const result = faceapi
-          .detectFaceLandmarks(video)
-          .then((r) => {
-            console.debug(r);
-            return r;
-          })
-          .catch(console.debug);
-      }
-
-      // const detection = await faceapi.detectSingleFace("video");
-      // console.debug(detection);
-    }
-    // setTimeout(() => a(), 1000);
-    // a();
-  };
-
-  useEffect(() => {
-    // load();
-    (async () => {
-      const MODEL_URL = process.env.PUBLIC_URL + "/models/";
-      console.debug(MODEL_URL);
-      // await changeFaceDetector(TinyFaceDetector);
-      // await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-      // Webカメラ初期化
-      const video = document.getElementById("video") as HTMLVideoElement;
-      // if (video) {
-      const media = navigator.mediaDevices
-        .getUserMedia({
-          audio: false,
-          video: {
-            width: 640,
-            height: 360,
-            aspectRatio: 1.77,
-            facingMode: "user",
-          },
-        })
-        .then((stream) => {
-          video.srcObject = stream;
-          video.onloadeddata = () => {
-            video.play();
-          };
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-      // }
-      await faceapi.nets.ssdMobilenetv1.load(MODEL_URL); // 精度の高い顔検出モデル
-      await faceapi.nets.faceLandmark68Net.load(MODEL_URL);
-
-      // const model = await faceLandmarksDetection.load(
-      //   faceLandmarksDetection.SupportedPackages.mediapipeFacemesh
-      // );
-      // const predictions = await model.estimateFaces({
-      //   input: document.querySelector("video") as HTMLVideoElement,
-      // });
-      // console.debug(predictions);
-      // const faces = await model.estimateFaces({ input: video });
-      a();
-    })();
-  }, []);
-
-  const onPlay = () => {
-    const message = document.getElementById("message");
-    const inputSize = 512; // 認識対象のサイズ
-    const scoreThreshold = 0.5; // 数値が高いほど精度が高くなる（〜0.9）
-    // (2)オプション設定
-    const options = new faceapi.TinyFaceDetectorOptions({
-      inputSize,
-      scoreThreshold,
-    });
-    const detectInterval = setInterval(async () => {
-      // (3)顔認識処理
-      const result = await faceapi.detectSingleFace(video, options);
-
-      if (result) {
-        console.debug("ok");
-      } else {
-        console.debug("ng");
-      }
-    }, 500);
-  };
   return (
     <>
-      <VideoInput cameraRef={cameraRef} />
+      {/* <VideoInput cameraRef={cameraRef} /> */}
 
       {/* <video id="video" autoPlay onLoadedMetadata={() => onPlay()}></video> */}
-      {/* <AvatarCanvas canvasRef={canvasRef} /> */}
+      <AvatarCanvas canvasRef={canvasRef} />
       <canvas
         ref={canvas}
         style={{

@@ -1,0 +1,26 @@
+{
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "haruto.moc3",
+    "Textures": ["haruto.2048/texture_00.png"],
+    "Physics": "haruto.physics3.json",
+    "DisplayInfo": "haruto.cdi3.json"
+  },
+  "Groups": [
+    {
+      "Target": "Parameter",
+      "Name": "LipSync",
+      "Ids": ["ParamMouthOpenY"]
+    },
+    {
+      "Target": "Parameter",
+      "Name": "EyeBlink",
+      "Ids": ["ParamEyeLOpen", "ParamEyeROpen"]
+    }
+  ],
+  "Position": {
+    "x": 0,
+    "y": 0,
+    "z": 8
+  }
+}
